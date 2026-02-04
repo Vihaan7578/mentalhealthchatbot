@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MindfulChat - Your supportive mental health companion. A safe space to talk, reflect, and find calm.">
+    <title>MindfulChat - Mental Health Support</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span>MindfulChat</span>
+                </div>
+                <button class="new-chat-btn" id="newChatBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+            <div class="chat-history" id="chatHistory">
+                <div class="history-section">
+                    <span class="history-label">Recent Conversations</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-info" id="userInfo">
+                    <div class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <span class="user-name">You</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- Main Chat Area -->
+        <main class="main-content">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                <h1>Welcome to MindfulChat</h1>
+                <p>A safe, supportive space for your thoughts and feelings. I'm here to listen, understand, and support you through whatever you're experiencing.</p>
+                <div class="welcome-suggestions">
+                    <button class="suggestion-chip" data-message="I've been feeling overwhelmed lately">
+                        <span>💭</span> I've been feeling overwhelmed
+                    </button>
+                    <button class="suggestion-chip" data-message="I need someone to talk to">
+                        <span>🤝</span> I need someone to talk to
+                    </button>
+                    <button class="suggestion-chip" data-message="I'm having trouble sleeping">
+                        <span>🌙</span> I'm having trouble sleeping
+                    </button>
+                    <button class="suggestion-chip" data-message="I want to feel better about myself">
+                        <span>✨</span> I want to feel better
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-container" id="chatContainer">
+                <div class="messages" id="messages"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Share what's on your mind..." 
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                <p class="input-disclaimer">MindfulChat is here to support you. If you're in crisis, please reach out to a professional.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div class="modal-overlay" id="emergencyModal">
+        <div class="emergency-modal">
+            <div class="emergency-header">
+                <svg class="emergency-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <h2>You're Not Alone</h2>
+                <p>I care about you deeply. If you're having thoughts of harming yourself, please reach out to one of these resources. Trained professionals are available 24/7.</p>
+            </div>
+            <div class="helplines">
+                <a href="tel:9152987821" class="helpline-card">
+                    <div class="helpline-info">
+                        <h3>iCall</h3>
+                        <p>Psychosocial Helpline</p>
+                        <span class="availability">Mon-Sat, 8am-10pm</span>
+                    </div>
+                    <span class="helpline-number">9152987821</span>
+                </a>
+                <a href="tel:18602662345" class="helpline-card">
+                    <div class="helpline-info">
+                        <h3>Vandrevala Foundation</h3>
+                        <p>Mental Health Support</p>
+                        <span class="availability">24/7 Available</span>
+                    </div>
+                    <span class="helpline-number">1860-2662-345</span>
+                </a>
+                <a href="tel:08046110007" class="helpline-card">
+                    <div class="helpline-info">
+                        <h3>NIMHANS</h3>
+                        <p>National Institute of Mental Health</p>
+                        <span class="availability">24/7 Available</span>
+                    </div>
+                    <span class="helpline-number">080-46110007</span>
+                </a>
+                <a href="tel:04424640050" class="helpline-card">
+                    <div class="helpline-info">
+                        <h3>Snehi</h3>
+                        <p>Emotional Support</p>
+                        <span class="availability">24/7 Available</span>
+                    </div>
+                    <span class="helpline-number">044-24640050</span>
+                </a>
+                <a href="tel:9820466726" class="helpline-card">
+                    <div class="helpline-info">
+                        <h3>AASRA</h3>
+                        <p>Crisis Intervention</p>
+                        <span class="availability">24/7 Available</span>
+                    </div>
+                    <span class="helpline-number">9820466726</span>
+                </a>
+            </div>
+            <button class="close-modal-btn" id="closeEmergencyModal">
+                I understand, continue chatting
+            </button>
+        </div>
+    </div>
+
+    <!-- Typing Indicator Template -->
+    <template id="typingIndicatorTemplate">
+        <div class="message ai-message typing-indicator-message">
+            <div class="message-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>
