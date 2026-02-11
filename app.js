@@ -8,9 +8,9 @@
 // ==========================================
 
 const CONFIG = {
-    GROQ_API_KEY: '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',
+    GROQ_API_KEY: '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',
     GROQ_API_URL: 'https://api.groq.com/openai/v1/chat/completions',
-    MODEL: 'llama-3.3-70b-versatile',
+    MODEL: 'llama-3.1-8b-instant',
     MAX_TOKENS: 500,
     STORAGE_KEY: 'mindfulchat_data'
 };
@@ -114,7 +114,7 @@ function generateUserId() {
         new Date().getTimezoneOffset(),
         navigator.platform
     ];
-    
+
     let hash = 0;
     const str = components.join('|');
     for (let i = 0; i < str.length; i++) {
@@ -122,7 +122,7 @@ function generateUserId() {
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash;
     }
-    
+
     return 'user_' + Math.abs(hash).toString(36) + '_' + Date.now().toString(36);
 }
 
@@ -140,7 +140,7 @@ function formatTime(timestamp) {
     const date = new Date(timestamp);
     const now = new Date();
     const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (diffDays === 1) {
@@ -174,10 +174,10 @@ function detectCrisis(message) {
  */
 function getChatTitle(messages) {
     if (messages.length === 0) return 'New conversation';
-    
+
     const firstUserMessage = messages.find(m => m.role === 'user');
     if (!firstUserMessage) return 'New conversation';
-    
+
     const content = firstUserMessage.content;
     if (content.length <= 30) return content;
     return content.substring(0, 30) + '...';
@@ -229,16 +229,16 @@ function updateUserContext(message) {
     if (!state.userContext.sessions_count) {
         state.userContext.sessions_count = 0;
     }
-    
+
     // Extract potential name mentions
     const nameMatch = message.match(/(?:my name is|i'm called|call me|i am)\s+(\w+)/i);
     if (nameMatch) {
         state.userContext.name = nameMatch[1];
     }
-    
+
     // Track mentioned topics (simple keyword extraction)
-    const topics = ['work', 'family', 'relationship', 'anxiety', 'depression', 'sleep', 
-                    'stress', 'school', 'friends', 'health', 'money', 'loneliness'];
+    const topics = ['work', 'family', 'relationship', 'anxiety', 'depression', 'sleep',
+        'stress', 'school', 'friends', 'health', 'money', 'loneliness'];
     topics.forEach(topic => {
         if (message.toLowerCase().includes(topic)) {
             if (!state.userContext.mentioned_topics.includes(topic)) {
@@ -246,7 +246,7 @@ function updateUserContext(message) {
             }
         }
     });
-    
+
     saveUserData();
 }
 
@@ -260,11 +260,11 @@ function updateUserContext(message) {
 function createMessageElement(role, content) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
-    
-    const avatarIcon = role === 'user' 
+
+    const avatarIcon = role === 'user'
         ? '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>'
         : '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>';
-    
+
     messageDiv.innerHTML = `
         <div class="message-avatar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -273,7 +273,7 @@ function createMessageElement(role, content) {
         </div>
         <div class="message-content">${escapeHtml(content)}</div>
     `;
-    
+
     return messageDiv;
 }
 
@@ -310,15 +310,15 @@ function scrollToBottom() {
  */
 function renderChatHistory() {
     const historySection = elements.chatHistory.querySelector('.history-section');
-    
+
     // Clear existing items except label
     const existingItems = historySection.querySelectorAll('.history-item');
     existingItems.forEach(item => item.remove());
-    
+
     // Sort chats by last updated
     const sortedChats = Object.entries(state.chats)
         .sort(([, a], [, b]) => b.updatedAt - a.updatedAt);
-    
+
     if (sortedChats.length === 0) {
         const emptyState = document.createElement('div');
         emptyState.className = 'history-item';
@@ -328,17 +328,37 @@ function renderChatHistory() {
         historySection.appendChild(emptyState);
         return;
     }
-    
+
     sortedChats.forEach(([chatId, chat]) => {
         const item = document.createElement('div');
         item.className = `history-item ${chatId === state.currentChatId ? 'active' : ''}`;
         item.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
-            <span>${escapeHtml(getChatTitle(chat.messages))}</span>
+            <span class="chat-title">${escapeHtml(getChatTitle(chat.messages))}</span>
+            <button class="delete-chat-btn" data-chat-id="${chatId}" title="Delete chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+            </button>
         `;
-        item.addEventListener('click', () => loadChat(chatId));
+
+        // Click on item loads the chat
+        item.addEventListener('click', (e) => {
+            if (!e.target.closest('.delete-chat-btn')) {
+                loadChat(chatId);
+            }
+        });
+
+        // Delete button handler
+        const deleteBtn = item.querySelector('.delete-chat-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteChat(chatId);
+        });
+
         historySection.appendChild(item);
     });
 }
@@ -348,9 +368,9 @@ function renderChatHistory() {
  */
 function renderMessages() {
     elements.messages.innerHTML = '';
-    
+
     if (!state.currentChatId || !state.chats[state.currentChatId]) return;
-    
+
     const chat = state.chats[state.currentChatId];
     chat.messages.forEach(msg => {
         if (msg.role !== 'system') {
@@ -358,7 +378,7 @@ function renderMessages() {
             elements.messages.appendChild(messageEl);
         }
     });
-    
+
     scrollToBottom();
 }
 
@@ -396,7 +416,7 @@ function hideEmergencyModal() {
  */
 function toggleSidebar() {
     elements.sidebar.classList.toggle('open');
-    
+
     // Create/toggle overlay
     let overlay = document.querySelector('.sidebar-overlay');
     if (!overlay) {
@@ -417,22 +437,22 @@ function toggleSidebar() {
  */
 function createNewChat() {
     const chatId = generateChatId();
-    
+
     state.chats[chatId] = {
         id: chatId,
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now()
     };
-    
+
     state.currentChatId = chatId;
     state.userContext.sessions_count++;
-    
+
     saveUserData();
     renderChatHistory();
     renderMessages();
     toggleWelcomeScreen(true);
-    
+
     // Close mobile sidebar
     if (elements.sidebar.classList.contains('open')) {
         toggleSidebar();
@@ -440,18 +460,54 @@ function createNewChat() {
 }
 
 /**
+ * Delete a chat and wipe from memory
+ */
+function deleteChat(chatId) {
+    if (!state.chats[chatId]) return;
+
+    // Confirm deletion
+    const chatTitle = getChatTitle(state.chats[chatId].messages);
+    if (!confirm(`Delete this conversation?\n"${chatTitle}"\n\nThis will permanently remove it from memory.`)) {
+        return;
+    }
+
+    // Delete the chat
+    delete state.chats[chatId];
+
+    // If we deleted the current chat, switch to another or show welcome
+    if (state.currentChatId === chatId) {
+        const remainingChats = Object.keys(state.chats);
+        if (remainingChats.length > 0) {
+            // Load the most recent remaining chat
+            const sortedRemaining = remainingChats
+                .sort((a, b) => state.chats[b].updatedAt - state.chats[a].updatedAt);
+            state.currentChatId = sortedRemaining[0];
+            renderMessages();
+            toggleWelcomeScreen(state.chats[state.currentChatId].messages.length === 0);
+        } else {
+            state.currentChatId = null;
+            elements.messages.innerHTML = '';
+            toggleWelcomeScreen(true);
+        }
+    }
+
+    saveUserData();
+    renderChatHistory();
+}
+
+/**
  * Load an existing chat
  */
 function loadChat(chatId) {
     if (!state.chats[chatId]) return;
-    
+
     state.currentChatId = chatId;
     saveUserData();
-    
+
     renderChatHistory();
     renderMessages();
     toggleWelcomeScreen(state.chats[chatId].messages.length === 0);
-    
+
     // Close mobile sidebar
     if (elements.sidebar.classList.contains('open')) {
         toggleSidebar();
@@ -463,32 +519,33 @@ function loadChat(chatId) {
  */
 function buildConversationContext() {
     const messages = [];
-    
+
     // Build enhanced system prompt with user context
     let enhancedPrompt = SYSTEM_PROMPT;
-    
+
     if (state.userContext.name) {
         enhancedPrompt += `\n\nThe user's name is ${state.userContext.name}. Use their name occasionally to be personal.`;
     }
-    
+
     if (state.userContext.mentioned_topics.length > 0) {
         enhancedPrompt += `\n\nTopics the user has mentioned before: ${state.userContext.mentioned_topics.join(', ')}. You can reference these when relevant.`;
     }
-    
+
     if (state.userContext.sessions_count > 1) {
         enhancedPrompt += `\n\nThis is session #${state.userContext.sessions_count} with this user. They're a returning visitor, which shows they find value in talking with you.`;
     }
-    
+
     messages.push({ role: 'system', content: enhancedPrompt });
-    
+
     // Add chat history (limit to last 20 messages for context)
     if (state.currentChatId && state.chats[state.currentChatId]) {
         const chatMessages = state.chats[state.currentChatId].messages
             .filter(m => m.role !== 'system')
-            .slice(-20);
+            .slice(-20)
+            .map(m => ({ role: m.role, content: m.content })); // Only include role and content
         messages.push(...chatMessages);
     }
-    
+
     return messages;
 }
 
@@ -511,11 +568,13 @@ async function sendToGroq(messages) {
                 top_p: 0.9
             })
         });
-        
+
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Groq API error response:', errorData);
+            throw new Error(`API error: ${response.status} - ${JSON.stringify(errorData)}`);
         }
-        
+
         const data = await response.json();
         return data.choices[0].message.content;
     } catch (error) {
@@ -530,17 +589,17 @@ async function sendToGroq(messages) {
 async function handleSendMessage() {
     const content = elements.messageInput.value.trim();
     if (!content || state.isTyping) return;
-    
+
     // Ensure we have a chat
     if (!state.currentChatId) {
         createNewChat();
     }
-    
+
     // Check for crisis
     if (detectCrisis(content)) {
         showEmergencyModal();
     }
-    
+
     // Add user message
     state.chats[state.currentChatId].messages.push({
         role: 'user',
@@ -548,33 +607,33 @@ async function handleSendMessage() {
         timestamp: Date.now()
     });
     state.chats[state.currentChatId].updatedAt = Date.now();
-    
+
     // Update user context
     updateUserContext(content);
-    
+
     // Update UI
     toggleWelcomeScreen(false);
     const userMessageEl = createMessageElement('user', content);
     elements.messages.appendChild(userMessageEl);
     scrollToBottom();
-    
+
     // Clear input
     elements.messageInput.value = '';
     elements.messageInput.style.height = 'auto';
     elements.sendBtn.disabled = true;
-    
+
     // Show typing indicator
     state.isTyping = true;
     showTypingIndicator();
-    
+
     try {
         // Build context and send to API
         const conversationContext = buildConversationContext();
         const aiResponse = await sendToGroq(conversationContext);
-        
+
         // Remove typing indicator
         removeTypingIndicator();
-        
+
         // Add AI response
         state.chats[state.currentChatId].messages.push({
             role: 'assistant',
@@ -582,18 +641,18 @@ async function handleSendMessage() {
             timestamp: Date.now()
         });
         state.chats[state.currentChatId].updatedAt = Date.now();
-        
+
         // Display AI message
         const aiMessageEl = createMessageElement('assistant', aiResponse);
         elements.messages.appendChild(aiMessageEl);
         scrollToBottom();
-        
+
         saveUserData();
         renderChatHistory();
-        
+
     } catch (error) {
         removeTypingIndicator();
-        
+
         // Show error message
         const errorMessage = "I'm having trouble connecting right now. Please try again in a moment. Remember, if you need immediate support, the helpline numbers are always available.";
         const errorEl = createMessageElement('assistant', errorMessage);
@@ -614,30 +673,30 @@ async function handleSendMessage() {
 function initEventListeners() {
     // Mobile menu
     elements.mobileMenuBtn.addEventListener('click', toggleSidebar);
-    
+
     // New chat button
     elements.newChatBtn.addEventListener('click', createNewChat);
-    
+
     // Message input
     elements.messageInput.addEventListener('input', () => {
         // Auto-resize textarea
         elements.messageInput.style.height = 'auto';
         elements.messageInput.style.height = Math.min(elements.messageInput.scrollHeight, 200) + 'px';
-        
+
         // Enable/disable send button
         elements.sendBtn.disabled = !elements.messageInput.value.trim();
     });
-    
+
     elements.messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
         }
     });
-    
+
     // Send button
     elements.sendBtn.addEventListener('click', handleSendMessage);
-    
+
     // Suggestion chips
     elements.suggestionChips.forEach(chip => {
         chip.addEventListener('click', () => {
@@ -647,7 +706,7 @@ function initEventListeners() {
             handleSendMessage();
         });
     });
-    
+
     // Emergency modal
     elements.closeEmergencyModal.addEventListener('click', hideEmergencyModal);
     elements.emergencyModal.addEventListener('click', (e) => {
@@ -655,7 +714,7 @@ function initEventListeners() {
             hideEmergencyModal();
         }
     });
-    
+
     // Handle escape key for modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -679,18 +738,18 @@ function initEventListeners() {
 function init() {
     // Load existing data or create new user
     const hasData = loadUserData();
-    
+
     if (!hasData) {
         state.userId = generateUserId();
         saveUserData();
     }
-    
+
     // Initialize event listeners
     initEventListeners();
-    
+
     // Render chat history
     renderChatHistory();
-    
+
     // Load last chat or show welcome
     if (state.currentChatId && state.chats[state.currentChatId]) {
         const hasMessages = state.chats[state.currentChatId].messages.length > 0;
@@ -699,7 +758,7 @@ function init() {
     } else {
         toggleWelcomeScreen(true);
     }
-    
+
     // Focus input
     elements.messageInput.focus();
 }
